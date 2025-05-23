@@ -18,6 +18,35 @@
     std::cin.rdbuf(__orig_cin); \
     std::cout.rdbuf(__orig_cout);
 
+inline std::string pure(const std::string& str) {
+    size_t end = str.find_last_not_of(" \t\n\r\f\v");
+    if (end == std::string::npos)
+        return "";
+    auto trimmed = str.substr(0, end + 1);
+    std::string escaped = "`";
+    // clang-format off
+        for (char ch : trimmed) {
+            switch (ch) {
+                case '\n': escaped += "\\n"; break;
+                case '\t': escaped += "\\t"; break;
+                case '\r': escaped += "\\r"; break;
+                case '\f': escaped += "\\f"; break;
+                case '\v': escaped += "\\v"; break;
+                case '\\': escaped += "\\\\"; break;
+                default:
+                    if (std::isprint(static_cast<unsigned char>(ch)))
+                        escaped += ch;
+                    else {
+                        char buf[5];
+                        std::snprintf(buf, sizeof(buf), "\\x%02X", static_cast<unsigned char>(ch));
+                        escaped += buf;
+                    }
+            }
+        }
+    // clang-format on
+    escaped += "`";
+    return escaped;
+}
 
 TEST_CASE("Case4") {
     INTERCEPTOR
